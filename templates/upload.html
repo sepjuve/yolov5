@@ -1,0 +1,48 @@
+<head>
+<title>Python Flask File Upload Example</title>
+<style>
+#main {
+  	display: block;
+  	margin-left: auto;
+  	margin-right: auto;
+	width: 40%;
+	}
+</style>	
+</head>
+<body>
+<div id="main">
+	<h2>Select a file to upload</h2>
+	<p>
+		{% with messages = get_flashed_messages() %}
+		  {% if messages %}
+			<ul class=flashes>
+			{% for message in messages %}
+			  <li>{{ message }}</li>
+			{% endfor %}
+			</ul>
+		  {% endif %}
+		{% endwith %}
+	</p>
+	{% if filename %}
+		<div>
+			{% if ext=='jpg' %}
+			<img src="{{ url_for('display_image', filename=filename) }}" width="400px">
+			{% else %}
+			<video width="320" height="240" controls>
+			<source src="{{ url_for('display_image', filename=filename) }}" type="video/mp4">
+			Your browser does not support the video tag.
+			</video>
+      <p><a href='{{ url_for('download', filename=filename) }}'>Download</a></p>
+			{% endif %}
+		</div>
+	{% endif %}
+	<form method="post" action="/" enctype="multipart/form-data">
+		<p>
+			<input type="file" name="file" autocomplete="off"  accept=".jpg,.mp4" capture="environment" required >
+		</p>
+		<p>
+			<input type="submit" value="Submit">
+		</p>
+	</form>
+</div>
+</body>

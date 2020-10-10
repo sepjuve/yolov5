@@ -17,6 +17,17 @@ from utils.general import (
     xyxy2xywh, plot_one_box, strip_optimizer, set_logging)
 from utils.torch_utils import select_device, load_classifier, time_synchronized
 
+def drawTextBg(img, label, thickness=1):
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    # Get text size
+    (text_width, text_height) = cv2.getTextSize(label, font, fontScale=0.4, thickness=1)[0]
+    # make the coords of the box with a small padding of two pixels
+    x=0
+    y=text_height+2
+    color = (0,0,0)
+    box_coords = ((x, y), (x + text_width + 2, y - text_height - 2))
+    cv2.rectangle(img, box_coords[0], box_coords[1], (0,255,0), cv2.FILLED)
+    cv2.putText(img, label, (x, y-2), font, 0.4, color, 1)
 
 def detect(save_img=False):
     out, source, weights, view_img, save_txt, imgsz = \
@@ -110,8 +121,10 @@ def detect(save_img=False):
 
                     if save_img or view_img:  # Add bbox to image
                         label = '%s %.2f' % (names[int(cls)], conf)
-                        plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=3)
-
+                        plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=1)
+            drawTextBg(im0,'info:'+str(s))
+            #cv2.putText(im0, 'info:'+str(s), (0, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0,255,0), 2)    
+            
             # Print time (inference + NMS)
             print('%sDone. (%.3fs)' % (s, t2 - t1))
 
@@ -131,7 +144,8 @@ def detect(save_img=False):
                         if isinstance(vid_writer, cv2.VideoWriter):
                             vid_writer.release()  # release previous video writer
 
-                        fourcc = 'mp4v'  # output video codec
+                        #fourcc = 'mp4v'  # output video codec
+                        fourcc = 'mp4v'
                         fps = vid_cap.get(cv2.CAP_PROP_FPS)
                         w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
                         h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -140,8 +154,11 @@ def detect(save_img=False):
 
     if save_txt or save_img:
         print('Results saved to %s' % Path(out))
+        if platform.system() == 'Darwin' and not opt.update:  # MacOS
+            os.system('open ' + save_path)
 
     print('Done. (%.3fs)' % (time.time() - t0))
+
 
 
 if __name__ == '__main__':
@@ -169,3 +186,5 @@ if __name__ == '__main__':
                 strip_optimizer(opt.weights)
         else:
             detect()
+
+
